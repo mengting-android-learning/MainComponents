@@ -7,9 +7,15 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.*
-import android.widget.Toast
+import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.IBinder
+import android.os.Looper
+import android.os.Message
+import android.os.Process
 import android.util.Log
+import android.widget.Toast
 
 private const val TAG = "HelloService"
 
@@ -53,7 +59,10 @@ class HelloService : Service() {
             val pendingIntent: PendingIntent =
                 Intent(this, MainActivity::class.java).let { notificationIntent ->
                     PendingIntent.getActivity(
-                        this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE
+                        this,
+                        0,
+                        notificationIntent,
+                        PendingIntent.FLAG_IMMUTABLE
                     )
                 }
             val notification: Notification =

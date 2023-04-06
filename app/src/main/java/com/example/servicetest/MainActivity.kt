@@ -64,7 +64,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             ServiceTestTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
                 ) {
                     val myIntent = Intent(this, MyService::class.java)
                     val helloIntent = Intent(this, HelloService::class.java)
@@ -86,7 +87,8 @@ class MainActivity : ComponentActivity() {
                             val broadcastIntent = Intent("com.example.servicetest.MY_BROADCAST")
                             broadcastIntent.setPackage(packageName)
                             sendOrderedBroadcast(broadcastIntent, null)
-                        })
+                        }
+                    )
                 }
             }
         }
@@ -99,8 +101,9 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         val notificationManager = NotificationManagerCompat.from(this)
-        if (!notificationManager.areNotificationsEnabled())
+        if (!notificationManager.areNotificationsEnabled()) {
             showNotificationDialog(this)
+        }
     }
 
     override fun onDestroy() {
@@ -112,7 +115,6 @@ class MainActivity : ComponentActivity() {
         override fun onReceive(p0: Context?, p1: Intent?) {
             Toast.makeText(p0, "Time has changes", Toast.LENGTH_SHORT).show()
         }
-
     }
 
     private fun createNotificationChannel(notificationManager: NotificationManager) {
@@ -174,5 +176,3 @@ private fun showNotificationDialog(context: Context) {
         .setNegativeButton("no") { _, _ -> }
         .show()
 }
-
-

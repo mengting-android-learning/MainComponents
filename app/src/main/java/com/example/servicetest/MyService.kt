@@ -12,7 +12,6 @@ class MyService : Service() {
 
     private val mBinder = DownloadBinder()
 
-
     class DownloadBinder : Binder() {
 
         fun startDownload() = Log.d(TAG, "startDownload executed")
@@ -20,9 +19,7 @@ class MyService : Service() {
             Log.d(TAG, "getProgress executed")
             return 0
         }
-
     }
-
 
     override fun onBind(intent: Intent): IBinder {
         return mBinder

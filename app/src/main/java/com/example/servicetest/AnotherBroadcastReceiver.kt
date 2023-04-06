@@ -9,7 +9,8 @@ class AnotherBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         Toast.makeText(
-            context, "received in AnotherBroadcastReceiver",
+            context,
+            "received in AnotherBroadcastReceiver",
             Toast.LENGTH_SHORT
         ).show()
     }
