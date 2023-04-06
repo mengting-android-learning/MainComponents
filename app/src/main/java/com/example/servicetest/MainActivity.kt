@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
             downloadBinder.startDownload()
             downloadBinder.getProgress()
         }
+
         override fun onServiceDisconnected(p0: ComponentName?) {
         }
     }
@@ -54,7 +55,7 @@ class MainActivity : ComponentActivity() {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-
+        
         setContent {
             ServiceTestTheme {
                 Surface(
@@ -62,15 +63,19 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val myIntent = Intent(this, MyService::class.java)
                     val helloIntent = Intent(this, HelloService::class.java)
+                    val notificationManager: NotificationManager =
+                        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    createNotificationChannel(notificationManager)
                     Greeting(
-                        { startService(helloIntent) },
+                        {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                applicationContext.startForegroundService(helloIntent)
+                            }
+                        },
                         { bindService(myIntent, connection, Context.BIND_AUTO_CREATE) },
                         { unbindService(connection) },
                         {
-                            val notificationManager: NotificationManager =
-                                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                            createNotificationChannel(notificationManager)
-                            notificationManager.notify(1,builder.build())
+                            notificationManager.notify(1, builder.build())
                         })
                 }
             }

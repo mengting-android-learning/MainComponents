@@ -5,4 +5,8 @@
     <string name="channel_description">Channel Description</string>
     <string name="notification_title">notification title</string>
     <string name="notification_content">notification content</string>
+    <string name="foreground_notification_channel_id">foreground notification channel id</string>
+    <string name="foreground_notification_channel_name">foreground notification channel name</string>
+    <string name="foreground_notification_title">foreground title</string>
+    <string name="foreground_notification_content">foreground content</string>
 </resources>
