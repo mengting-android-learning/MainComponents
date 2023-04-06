@@ -4,14 +4,17 @@ import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -29,6 +32,7 @@ import com.example.servicetest.ui.theme.ServiceTestTheme
 class MainActivity : ComponentActivity() {
 
     lateinit var downloadBinder: MyService.DownloadBinder
+    lateinit var timeChangeReceiver: TimeChangeReceiver
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
@@ -55,7 +59,7 @@ class MainActivity : ComponentActivity() {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-        
+
         setContent {
             ServiceTestTheme {
                 Surface(
@@ -83,6 +87,22 @@ class MainActivity : ComponentActivity() {
         val notificationManager = NotificationManagerCompat.from(this)
         if (!notificationManager.areNotificationsEnabled())
             showNotificationDialog(this)
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("android.intent.action.TIME_TICK")
+        timeChangeReceiver = TimeChangeReceiver()
+        registerReceiver(timeChangeReceiver, intentFilter)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(timeChangeReceiver)
+    }
+
+    inner class TimeChangeReceiver : BroadcastReceiver() {
+        override fun onReceive(p0: Context?, p1: Intent?) {
+            Toast.makeText(p0, "Time has changes", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     private fun createNotificationChannel(notificationManager: NotificationManager) {
@@ -123,7 +143,7 @@ private fun showNotificationDialog(context: Context) {
         .setPositiveButton("yes") { _, _ ->
             val intent = Intent().apply {
                 action = when {
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> Settings.ACTION_ACCESSIBILITY_SETTINGS
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> Settings.ACTION_APP_NOTIFICATION_SETTINGS
                     else -> "android.settings.APP_NOTIFICATION_SETTINGS"
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
