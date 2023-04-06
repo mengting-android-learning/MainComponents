@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">ServiceTest</string>
-    <string name="channel_name">channel name</string>
-    <string name="channel_description">description</string>
     <string name="channel_id">Channel Id</string>
+    <string name="channel_name">Channel Name</string>
+    <string name="channel_description">Channel Description</string>
+    <string name="notification_title">notification title</string>
+    <string name="notification_content">notification content</string>
 </resources>
