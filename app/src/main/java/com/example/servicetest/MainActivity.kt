@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -84,18 +85,22 @@ class MainActivity : ComponentActivity() {
                         {
                             val broadcastIntent = Intent("com.example.servicetest.MY_BROADCAST")
                             broadcastIntent.setPackage(packageName)
-                            sendOrderedBroadcast(broadcastIntent,null)
+                            sendOrderedBroadcast(broadcastIntent, null)
                         })
                 }
             }
         }
-        val notificationManager = NotificationManagerCompat.from(this)
-        if (!notificationManager.areNotificationsEnabled())
-            showNotificationDialog(this)
         val intentFilter = IntentFilter()
         intentFilter.addAction("android.intent.action.TIME_TICK")
         timeChangeReceiver = TimeChangeReceiver()
         registerReceiver(timeChangeReceiver, intentFilter)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val notificationManager = NotificationManagerCompat.from(this)
+        if (!notificationManager.areNotificationsEnabled())
+            showNotificationDialog(this)
     }
 
     override fun onDestroy() {
