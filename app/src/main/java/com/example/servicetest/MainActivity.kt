@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -80,6 +81,11 @@ class MainActivity : ComponentActivity() {
                         { unbindService(connection) },
                         {
                             notificationManager.notify(1, builder.build())
+                        },
+                        {
+                            val broadcastIntent = Intent("com.example.servicetest.MY_BROADCAST")
+                            broadcastIntent.setPackage(packageName)
+                            sendBroadcast(broadcastIntent)
                         })
                 }
             }
@@ -120,7 +126,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(start: () -> Unit, bind: () -> Unit, unbind: () -> Unit, notify: () -> Unit) {
+fun Greeting(
+    start: () -> Unit,
+    bind: () -> Unit,
+    unbind: () -> Unit,
+    notify: () -> Unit,
+    sendBroadcast: () -> Unit
+) {
     Column {
         Button(onClick = { start() }) {
             Text(text = "Start Service")
@@ -133,6 +145,9 @@ fun Greeting(start: () -> Unit, bind: () -> Unit, unbind: () -> Unit, notify: ()
         }
         Button(onClick = { notify() }) {
             Text(text = "notification")
+        }
+        Button(onClick = { sendBroadcast() }) {
+            Text(text = "broadcast")
         }
     }
 }

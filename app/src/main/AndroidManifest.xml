@@ -16,6 +16,14 @@
         android:theme="@style/Theme.ServiceTest"
         tools:targetApi="31">
         <receiver
+            android:name=".MyBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.servicetest.MY_BROADCAST" />
+            </intent-filter>
+        </receiver>
+        <receiver
             android:name=".BootCompleteReceiver"
             android:enabled="true"
             android:exported="true">
