@@ -14,7 +14,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -85,7 +84,7 @@ class MainActivity : ComponentActivity() {
                         {
                             val broadcastIntent = Intent("com.example.servicetest.MY_BROADCAST")
                             broadcastIntent.setPackage(packageName)
-                            sendBroadcast(broadcastIntent)
+                            sendOrderedBroadcast(broadcastIntent,null)
                         })
                 }
             }
