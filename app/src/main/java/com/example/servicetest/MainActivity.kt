@@ -16,6 +16,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.ContactsContract
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -51,6 +52,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val contacts = mutableListOf<String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -73,7 +76,17 @@ class MainActivity : ComponentActivity() {
                 if (isGranted) {
                     call()
                 } else {
-                    Toast.makeText(this,"you have denied",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "you have denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        val requestReadContactsPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    readContacts()
+                } else {
+                    Toast.makeText(this, "can't read contacts", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -110,19 +123,53 @@ class MainActivity : ComponentActivity() {
                                     this,
                                     Manifest.permission.CALL_PHONE
                                 ) != PackageManager.PERMISSION_GRANTED
-                            ){
+                            ) {
                                 requestPermissionLauncher.launch(Manifest.permission.CALL_PHONE)
-                            }else
+                            } else {
                                 call()
+                            }
+                        },
+                        {
+                            if (ContextCompat.checkSelfPermission(
+                                    this,
+                                    Manifest.permission.READ_CONTACTS
+                                ) != PackageManager.PERMISSION_GRANTED
+                            ) {
+                                requestReadContactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                            } else {
+                                readContacts()
+                            }
                         }
                     )
                 }
             }
         }
+
         val intentFilter = IntentFilter()
         intentFilter.addAction("android.intent.action.TIME_TICK")
         timeChangeReceiver = TimeChangeReceiver()
         registerReceiver(timeChangeReceiver, intentFilter)
+    }
+
+    private fun readContacts() {
+        contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            null,
+            null,
+            null,
+            null
+        )?.apply {
+            while (moveToNext()) {
+                val nameIndex = getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                val numberIndex = getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                if (nameIndex > -1) {
+                    val contactName = getString(nameIndex)
+                    val contactNumber = getString(numberIndex)
+                    contacts.add("$contactName $contactNumber")
+                }
+            }
+            Log.d("readContacts", contacts.toString())
+        }
     }
 
     private fun call() {
@@ -130,8 +177,8 @@ class MainActivity : ComponentActivity() {
             val intent = Intent(Intent.ACTION_CALL)
             intent.data = Uri.parse("tel:10086")
             startActivity(intent)
-        }catch (e:SecurityException){
-            Log.w("MakeCall",e.toString())
+        } catch (e: SecurityException) {
+            Log.w("MakeCall", e.toString())
         }
     }
 
@@ -175,7 +222,8 @@ fun Greeting(
     unbind: () -> Unit,
     notify: () -> Unit,
     sendBroadcast: () -> Unit,
-    call: () -> Unit
+    call: () -> Unit,
+    readContacts: () -> Unit
 ) {
     Column {
         Button(onClick = { start() }) {
@@ -195,6 +243,9 @@ fun Greeting(
         }
         Button(onClick = { call() }) {
             Text(text = "make call")
+        }
+        Button(onClick = { readContacts() }) {
+            Text(text = "show contacts")
         }
     }
 }
