@@ -1,5 +1,6 @@
 package com.example.servicetest
 
+import android.Manifest
 import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,13 +11,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
@@ -27,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.servicetest.ui.theme.ServiceTestTheme
 
 class MainActivity : ComponentActivity() {
@@ -60,6 +66,16 @@ class MainActivity : ComponentActivity() {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+        val requestPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    call()
+                } else {
+                    Toast.makeText(this,"you have denied",Toast.LENGTH_SHORT).show()
+                }
+            }
 
         setContent {
             ServiceTestTheme {
@@ -87,6 +103,17 @@ class MainActivity : ComponentActivity() {
                             val broadcastIntent = Intent("com.example.servicetest.MY_BROADCAST")
                             broadcastIntent.setPackage(packageName)
                             sendOrderedBroadcast(broadcastIntent, null)
+                        },
+                        {
+                            if (
+                                ContextCompat.checkSelfPermission(
+                                    this,
+                                    Manifest.permission.CALL_PHONE
+                                ) != PackageManager.PERMISSION_GRANTED
+                            ){
+                                requestPermissionLauncher.launch(Manifest.permission.CALL_PHONE)
+                            }else
+                                call()
                         }
                     )
                 }
@@ -96,6 +123,16 @@ class MainActivity : ComponentActivity() {
         intentFilter.addAction("android.intent.action.TIME_TICK")
         timeChangeReceiver = TimeChangeReceiver()
         registerReceiver(timeChangeReceiver, intentFilter)
+    }
+
+    private fun call() {
+        try {
+            val intent = Intent(Intent.ACTION_CALL)
+            intent.data = Uri.parse("tel:10086")
+            startActivity(intent)
+        }catch (e:SecurityException){
+            Log.w("MakeCall",e.toString())
+        }
     }
 
     override fun onResume() {
@@ -137,7 +174,8 @@ fun Greeting(
     bind: () -> Unit,
     unbind: () -> Unit,
     notify: () -> Unit,
-    sendBroadcast: () -> Unit
+    sendBroadcast: () -> Unit,
+    call: () -> Unit
 ) {
     Column {
         Button(onClick = { start() }) {
@@ -154,6 +192,9 @@ fun Greeting(
         }
         Button(onClick = { sendBroadcast() }) {
             Text(text = "broadcast")
+        }
+        Button(onClick = { call() }) {
+            Text(text = "make call")
         }
     }
 }
