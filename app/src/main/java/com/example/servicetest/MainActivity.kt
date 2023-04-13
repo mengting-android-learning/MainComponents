@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.contentValuesOf
 import com.example.servicetest.ui.theme.ServiceTestTheme
 
 class MainActivity : ComponentActivity() {
@@ -139,7 +140,11 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 readContacts()
                             }
-                        }
+                        },
+                        { addData() },
+                        { queryData() },
+                        { updateData() },
+                        { deleteData() }
                     )
                 }
             }
@@ -213,6 +218,60 @@ class MainActivity : ComponentActivity() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+
+    private var bookId: String? = null
+
+    private fun addData() {
+        try {
+            val uri = Uri.parse("content://com.example.filepersistencetest.provider/book")
+            val values = contentValuesOf(
+                "name" to "A Clash of Kings",
+                "author" to "George Martin",
+                "pages" to 1040,
+                "price" to 22.85
+            )
+            val newUri = contentResolver.insert(uri, values)
+            bookId = newUri?.pathSegments?.get(1)
+        } catch (e: Exception) {
+            Log.w("ContentProvider", e.toString())
+        }
+    }
+
+    private fun queryData() {
+        val uri = Uri.parse("content://com.example.filepersistencetest.provider/book")
+        contentResolver.query(uri, null, null, null, null)?.apply {
+            while (moveToNext()) {
+                val name = getString(getColumnIndexOrThrow("name"))
+                val author = getString(getColumnIndexOrThrow("author"))
+                val pages = getString(getColumnIndexOrThrow("pages"))
+                val price = getString(getColumnIndexOrThrow("price"))
+                Log.d("QueryFromBook", "book name is $name")
+                Log.d("QueryFromBook", "book author is $author")
+                Log.d("QueryFromBook", "book pages is $pages")
+                Log.d("QueryFromBook", "book price is $price")
+            }
+            close()
+        }
+    }
+
+    private fun updateData() {
+        bookId?.let {
+            val uri = Uri.parse("content://com.example.filepersistencetest.provider/book/$it")
+            val values = contentValuesOf(
+                "name" to "A Storm of Swords",
+                "pages" to 1216,
+                "price" to 24.05
+            )
+            contentResolver.update(uri, values, null, null)
+        }
+    }
+
+    private fun deleteData() {
+        bookId?.let {
+            val uri = Uri.parse("content://com.example.filepersistencetest.provider/book/$it")
+            contentResolver.delete(uri, null, null)
+        }
+    }
 }
 
 @Composable
@@ -223,7 +282,11 @@ fun Greeting(
     notify: () -> Unit,
     sendBroadcast: () -> Unit,
     call: () -> Unit,
-    readContacts: () -> Unit
+    readContacts: () -> Unit,
+    addData: () -> Unit,
+    queryData: () -> Unit,
+    updateData: () -> Unit,
+    deleteData: () -> Unit
 ) {
     Column {
         Button(onClick = { start() }) {
@@ -247,6 +310,18 @@ fun Greeting(
         Button(onClick = { readContacts() }) {
             Text(text = "show contacts")
         }
+        Button(onClick = { addData() }) {
+            Text(text = "Add to Book")
+        }
+        Button(onClick = { queryData() }) {
+            Text(text = "Query from Book")
+        }
+        Button(onClick = { updateData() }) {
+            Text(text = "Update Book")
+        }
+        Button(onClick = { deleteData() }) {
+            Text(text = "Delete from Book")
+        }
     }
 }
 
@@ -268,3 +343,4 @@ private fun showNotificationDialog(context: Context) {
         .setNegativeButton("no") { _, _ -> }
         .show()
 }
+
